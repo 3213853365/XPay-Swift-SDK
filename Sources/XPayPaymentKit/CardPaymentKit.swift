@@ -111,6 +111,8 @@ struct WebView: UIViewRepresentable {
 }
 
 public enum Card {
+    case VISA
+    case MASTERCARD
     case AMEX
     case PAYPAK
 }
@@ -151,18 +153,18 @@ public struct XPayPaymentForm: View, XPayFormProtocol {
         self.onBinDiscount = onBinDiscount
         self.controller = controller
         
-        // Default cards (Visa + Master always allowed)
-        var cards: Set<PaymentCard> = [.VISA, .MASTERCARD]
-        // Add only the requested extra cards (unique by Set)
-        for extra in allowedCards {
-            switch extra {
-            case .AMEX: cards.insert(.AMEX)
-            case .PAYPAK: cards.insert(.PAYPAK)
-            }
+        if allowedCards.isEmpty {
+            self.allowedCards = [.VISA, .MASTERCARD]
+        } else {
+            self.allowedCards = Set(allowedCards.map { card in
+                switch card {
+                case .VISA: return .VISA
+                case .MASTERCARD: return .MASTERCARD
+                case .AMEX: return .AMEX
+                case .PAYPAK: return .PAYPAK
+                }
+            })
         }
-        
-        self.allowedCards = cards
-        
     }
     
     func confirmPayment(customerName: String, clientSecret: String, paymentResponse: @escaping (([String: Any]) -> Void)) {
